@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>مخزون الفساتين</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+    h1 { text-align: center; }
+    #dresses-list { max-width: 600px; margin: 20px auto; background: white; padding: 15px; border-radius: 8px; }
+    .dress-item { padding: 10px; border-bottom: 1px solid #ddd; }
+    .dress-item:last-child { border-bottom: none; }
+    .label { font-weight: bold; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    // بيانات إعدادات Firebase - عبيها ببيانات مشروعك:
+    const firebaseConfig = {
+      apiKey: "AIzaSyBDVd2SHAmtIbJGlH0lrnPSz-eHfsg6Gyc",
+      authDomain: "show-inventory.firebaseapp.com",
+      projectId: "show-inventory",
+      storageBucket: "show-inventory.firebasestorage.app",
+      messagingSenderId: "697364304883",
+      appId: "1:697364304883:web:a7b41cc929228976533886",
+      measurementId: "G-4YZBJM54FE"
+    };
+
+    // تهيئة التطبيق وقاعدة البيانات
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // دالة لجلب وعرض بيانات الفساتين
+    async function loadDresses() {
+      const dressesList = document.getElementById('dresses-list');
+      dressesList.innerHTML = "جاري تحميل البيانات...";
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "dresses"));
+        if (querySnapshot.empty) {
+          dressesList.innerHTML = "<p>لا توجد فساتين في المخزون حالياً.</p>";
+          return;
+        }
+
+        // امسح النص القديم
+        dressesList.innerHTML = "";
+
+        querySnapshot.forEach((doc) => {
+          const dress = doc.data();
+          const div = document.createElement('div');
+          div.className = 'dress-item';
+
+          div.innerHTML = `
+            <div><span class="label">موديل:</span> ${dress.model}</div>
+            <div><span class="label">لون:</span> ${dress.color}</div>
+            <div><span class="label">مقاس:</span> ${dress.size}</div>
+            <div><span class="label">باركود:</span> ${doc.id}</div>
+          `;
+
+          dressesList.appendChild(div);
+        });
+
+      } catch (error) {
+        dressesList.innerHTML = "<p>حدث خطأ أثناء تحميل البيانات.</p>";
+        console.error("Firestore error:", error);
+      }
+    }
+
+    window.onload = () => {
+      loadDresses();
+    };
+  </script>
+</head>
+<body>
+  <h1>مخزون الفساتين</h1>
+  <div id="dresses-list">
+    <!-- هنا تظهر قائمة الفساتين -->
+  </div>
+</body>
+</html>
